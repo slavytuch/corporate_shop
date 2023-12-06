@@ -15,13 +15,9 @@ class SetManager extends BaseInlineActionAbstract
 {
     public function process()
     {
-        $parts = explode(':', $this->relatedObject->data);
-
-        $orderId = $parts[array_key_last($parts)];
-
         $conversationService = app(ConversationService::class);
 
-        $conversation = $conversationService->createConversation($this->user, Topic::CANCEL_ORDER, $orderId);
+        $conversation = $conversationService->createConversation($this->user, Topic::SET_MANAGER);
 
         $conversationService->proceedConversation($this->telegram, $conversation);
         $this->answer();

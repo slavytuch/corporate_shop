@@ -13,6 +13,7 @@ use App\Slavytuch\Telegram\Conversation\Handlers\CancelOrderConversation;
 use App\Slavytuch\Telegram\Conversation\Handlers\ChangeNameConversation;
 use App\Slavytuch\Telegram\Conversation\Handlers\CreateOrderConversation;
 use App\Slavytuch\Telegram\Conversation\Handlers\GiveCurrencyConversation;
+use App\Slavytuch\Telegram\Conversation\Handlers\SetManagerConversation;
 use App\Slavytuch\Telegram\Inline\Actions\Personal\GiveCurrency;
 use Telegram\Bot\Api;
 
@@ -22,7 +23,8 @@ class ConversationService
         Topic::CHANGE_NAME->value => ChangeNameConversation::class,
         Topic::CREATE_ORDER->value => CreateOrderConversation::class,
         Topic::CANCEL_ORDER->value => CancelOrderConversation::class,
-        Topic::GIVE_CURRENCY->value => GiveCurrencyConversation::class
+        Topic::GIVE_CURRENCY->value => GiveCurrencyConversation::class,
+        Topic::SET_MANAGER->value => SetManagerConversation::class,
     ];
 
     public function __construct()

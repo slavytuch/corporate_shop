@@ -4,6 +4,7 @@ namespace App\Slavytuch\Telegram\Commands;
 
 use App\Slavytuch\Telegram\Keyboards\Enums\KeyboardType;
 use App\Slavytuch\Telegram\Keyboards\Factories\KeyboardFactory;
+use App\Slavytuch\Telegram\Keyboards\PersonalKeyboard;
 use App\Slavytuch\Telegram\Util\UserHelper;
 use Telegram\Bot\Commands\Command;
 
@@ -23,11 +24,9 @@ class PersonalCommand extends Command
             $text .= $balance->priceType()->first()->name . ': ' . $balance->amount . PHP_EOL;
         }
 
-        $keyboardFactory = new KeyboardFactory($user);
-
         $this->replyWithMessage([
             'text' => $text ?: 'Баланс пуст',
-            'reply_markup' => $keyboardFactory->getKeyboard(KeyboardType::PERSONAL)?->getKeyboard()
+            'reply_markup' => (new PersonalKeyboard($user))->getKeyboard()
         ]);
     }
 }

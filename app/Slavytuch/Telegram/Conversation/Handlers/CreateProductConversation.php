@@ -83,7 +83,28 @@ class CreateProductConversation extends BaseConversationAbstract implements HasA
 
     public function prices()
     {
+        $message = $this->telegram->getWebhookUpdate()->getMessage()->text;
 
+        $rows = explode(PHP_EOL, $message);
+
+        $prices = [];
+        foreach ($rows as $row) {
+            $parts = explode(' - ', $row);
+            $prices[$parts[0]] = $parts[1];
+        }
+
+        $this->reply([
+            'text' => 'Хорошо, товар сформирован, всё верно?',
+            'reply_markup' => Keyboard::make([
+                'keyboard' => [['Да', 'Нет']],
+                'resize_keyboard' => true,
+                'one_time_keyboard' => true,
+            ])
+        ]);
+
+        $this->telegram->sendPhoto([
+            'text' => ''
+        ]);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Slavytuch\Telegram\Inline\Actions\Catalog;
 
 use App\Models\Product;
 use App\Slavytuch\Telegram\Inline\Abstracts\BaseInlineActionAbstract;
+use App\Slavytuch\Telegram\Inline\Actions\Enums\ActionFunction;
 use Telegram\Bot\FileUpload\InputFile;
 use Telegram\Bot\Keyboard\Keyboard;
 
@@ -34,7 +35,7 @@ class DisplayProduct extends BaseInlineActionAbstract
             $buyButtonList[] = Keyboard::inlineButton(
                 [
                     'text' => 'Купить за ' . $price->name,
-                    'callback_data' => 'catalog:buy:' . $mainItem->id . ':priceType:' . $price->id
+                    'callback_data' => ActionFunction::CATALOG_BUY->value . $mainItem->id . ':priceType:' . $price->id
                 ]
             );
         }

@@ -4,6 +4,8 @@ namespace App\Slavytuch\Telegram\Inline\Actions\Personal;
 
 use App\Models\User;
 use App\Slavytuch\Telegram\Inline\Abstracts\BaseInlineActionAbstract;
+use App\Slavytuch\Telegram\Inline\Actions\Enums\ActionFunction;
+use App\Slavytuch\Telegram\Inline\Actions\Enums\ActionProcedure;
 use App\Slavytuch\Telegram\Util\UserHelper;
 use Illuminate\Support\Collection;
 use Telegram\Bot\Keyboard\Keyboard;
@@ -30,10 +32,11 @@ class OrderList extends BaseInlineActionAbstract
             }
             $keyboard[] = [
                 Keyboard::inlineButton(
-                    ['text' => $text, 'callback_data' => 'personal:display-order:' . $order->id]
+                    ['text' => $text, 'callback_data' => ActionFunction::DISPLAY_ORDER->value . $order->id]
                 )
             ];
         }
+
         $this->telegram->editMessageText([
             'message_id' => $this->relatedObject->message->messageId,
             'chat_id' => $this->relatedObject->message->chat->id,

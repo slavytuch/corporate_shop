@@ -5,6 +5,7 @@ namespace App\Slavytuch\Telegram\Inline\Actions\Catalog;
 use App\Models\Product;
 use App\Slavytuch\Shop\Catalog\CatalogService;
 use App\Slavytuch\Telegram\Inline\Abstracts\BaseInlineActionAbstract;
+use App\Slavytuch\Telegram\Inline\Actions\Enums\ActionFunction;
 use Telegram\Bot\FileUpload\InputFile;
 use Telegram\Bot\Keyboard\Keyboard;
 
@@ -27,7 +28,7 @@ class ListPage extends BaseInlineActionAbstract
         foreach ($productList as $product) {
             $buttonList[] = [
                 Keyboard::inlineButton(
-                    ['text' => $product->name, 'callback_data' => 'catalog:display:' . $product->id]
+                    ['text' => $product->name, 'callback_data' => ActionFunction::CATALOG_DISPLAY->value . $product->id]
                 )
             ];
         }
@@ -36,7 +37,7 @@ class ListPage extends BaseInlineActionAbstract
         if ($page > 1) {
             $navigationButtons[] =
                 Keyboard::inlineButton(
-                    ['text' => '<- Предыдущая страница', 'callback_data' => 'catalog:list:' . ($page - 1)]
+                    ['text' => '<- Предыдущая страница', 'callback_data' => ActionFunction::CATALOG_LIST->value . ($page - 1)]
                 );
         }
 
@@ -44,7 +45,7 @@ class ListPage extends BaseInlineActionAbstract
             /** @noinspection PhpWrongStringConcatenationInspection */
             $navigationButtons[] =
                 Keyboard::inlineButton(
-                    ['text' => 'Следующая страница ->', 'callback_data' => 'catalog:list:' . ($page + 1)]
+                    ['text' => 'Следующая страница ->', 'callback_data' =>  ActionFunction::CATALOG_LIST->value . ($page + 1)]
                 );
         }
 

@@ -5,6 +5,8 @@ namespace App\Slavytuch\Telegram\Inline\Actions\Personal;
 use App\Models\Order;
 use App\Models\User;
 use App\Slavytuch\Shop\Order\Enums\Status;
+use App\Slavytuch\Shop\Order\Exceptions\OrderServiceException;
+use App\Slavytuch\Shop\Order\OrderService;
 use App\Slavytuch\Telegram\Conversation\ConversationService;
 use App\Slavytuch\Telegram\Conversation\Enums\Topic;
 use App\Slavytuch\Telegram\Inline\Abstracts\BaseInlineActionAbstract;
@@ -20,16 +22,24 @@ class CancelOrder extends BaseInlineActionAbstract
 
         $orderId = $parts[array_key_last($parts)];
 
-        if (Order::find($orderId)->status !== Status::CREATED) {
-            $this->answer('Заказ уже не отменить');
+        $order = Order::find($orderId);
+
+        if (!$order) {
+            $this->answer('Не могу найти заказ :(');
             return;
         }
 
-        $conversationService = app(ConversationService::class);
+        try {
+            app(OrderService::class)->checkCancel($order);
 
-        $conversation = $conversationService->createConversation($this->user, Topic::CANCEL_ORDER, $orderId);
+            $conversationService = app(ConversationService::class);
 
-        $conversationService->proceedConversation($this->telegram, $conversation);
-        $this->answer();
+            $conversation = $conversationService->createConversation($this->user, Topic::CANCEL_ORDER, $orderId);
+
+            $conversationService->proceedConversation($this->telegram, $conversation);
+            $this->answer();
+        } catch (OrderServiceException $ex) {
+            $this->answer($ex->getMessage());
+        }
     }
 }

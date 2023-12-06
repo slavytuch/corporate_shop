@@ -60,7 +60,9 @@ class WebhookManager
             case CallbackQuery::class:
                 $factory = new InlineActionFactory($this->telegram, $relatedObject);
                 $action = $factory->getAction();
-                $action->process();
+                if ($action) {
+                    $action->process();
+                }
                 return;
             case Message::class:
                 if ($openConversation) {

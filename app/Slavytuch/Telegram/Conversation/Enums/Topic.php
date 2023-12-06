@@ -8,4 +8,5 @@ enum Topic: string
     case CREATE_ORDER = 'create-order';
     case CANCEL_ORDER = 'cancel-order';
     case GIVE_CURRENCY = 'give-currency';
+    case SET_MANAGER = 'set-manager';
 }
