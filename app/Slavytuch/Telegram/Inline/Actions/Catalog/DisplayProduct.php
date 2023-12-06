@@ -5,6 +5,8 @@ namespace App\Slavytuch\Telegram\Inline\Actions\Catalog;
 use App\Models\Product;
 use App\Slavytuch\Telegram\Inline\Abstracts\BaseInlineActionAbstract;
 use App\Slavytuch\Telegram\Inline\Actions\Enums\ActionFunction;
+use App\Slavytuch\Telegram\Inline\Actions\Enums\ActionProcedure;
+use App\Slavytuch\Telegram\Keyboards\ProductKeyboard;
 use Telegram\Bot\FileUpload\InputFile;
 use Telegram\Bot\Keyboard\Keyboard;
 
@@ -30,28 +32,11 @@ class DisplayProduct extends BaseInlineActionAbstract
             $caption .= PHP_EOL . $mainItem->description;
         }
 
-        $buyButtonList = [];
-        foreach ($priceList as $price) {
-            $buyButtonList[] = Keyboard::inlineButton(
-                [
-                    'text' => 'Купить за ' . $price->name,
-                    'callback_data' => ActionFunction::CATALOG_BUY->value . $mainItem->id . ':priceType:' . $price->id
-                ]
-            );
-        }
-
         $this->telegram->sendPhoto([
             'chat_id' => $this->relatedObject->message->chat->id,
             'photo' => InputFile::create($mainItem->picture),
             'caption' => $caption,
-            'reply_markup' => Keyboard::make(
-                [
-                    'inline_keyboard' => [
-                        $buyButtonList,
-                        [Keyboard::inlineButton(['text' => 'На главную', 'callback_data' => 'catalog:main'])],
-                    ]
-                ]
-            )
+            'reply_markup' => (new ProductKeyboard($this->user, $mainItem))->getKeyboard()
         ]);
 
         $this->answer();

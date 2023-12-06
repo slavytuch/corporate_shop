@@ -6,6 +6,6 @@ class CatalogService
 {
     public function itemsPerPage(): int
     {
-        return 10;
+        return 2;
     }
 }
