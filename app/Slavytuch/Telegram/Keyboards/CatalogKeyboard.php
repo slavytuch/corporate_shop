@@ -3,7 +3,9 @@
 namespace App\Slavytuch\Telegram\Keyboards;
 
 use App\Models\User;
+use App\Slavytuch\Shop\Global\Enums\UserPermissions;
 use App\Slavytuch\Telegram\Inline\Actions\Enums\ActionFunction;
+use App\Slavytuch\Telegram\Inline\Actions\Enums\ActionProcedure;
 use App\Slavytuch\Telegram\Keyboards\Abstracts\BaseKeyboardAbstract;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Telegram\Bot\Keyboard\Keyboard;
@@ -44,6 +46,14 @@ class CatalogKeyboard extends BaseKeyboardAbstract
 
         if (!empty($navigationButtons)) {
             $buttonList[] = $navigationButtons;
+        }
+
+        if ($this->user->can(UserPermissions::ACCESS_CATALOG->value)) {
+            $buttonList[] = [
+                Keyboard::inlineButton(
+                    ['text' => 'Добавить товар', 'callback_data' => ActionProcedure::ADD_PRODUCT->value]
+                )
+            ];
         }
 
 

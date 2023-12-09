@@ -12,6 +12,7 @@ use App\Slavytuch\Telegram\Conversation\Enums\Topic;
 use App\Slavytuch\Telegram\Conversation\Handlers\CancelOrderConversation;
 use App\Slavytuch\Telegram\Conversation\Handlers\ChangeNameConversation;
 use App\Slavytuch\Telegram\Conversation\Handlers\CreateOrderConversation;
+use App\Slavytuch\Telegram\Conversation\Handlers\CreateProductConversation;
 use App\Slavytuch\Telegram\Conversation\Handlers\GiveCurrencyConversation;
 use App\Slavytuch\Telegram\Conversation\Handlers\SetManagerConversation;
 use App\Slavytuch\Telegram\Inline\Actions\Personal\GiveCurrency;
@@ -25,6 +26,7 @@ class ConversationService
         Topic::CANCEL_ORDER->value => CancelOrderConversation::class,
         Topic::GIVE_CURRENCY->value => GiveCurrencyConversation::class,
         Topic::SET_MANAGER->value => SetManagerConversation::class,
+        Topic::ADD_PRODUCT->value => CreateProductConversation::class,
     ];
 
     public function __construct()
@@ -71,12 +73,19 @@ class ConversationService
 
         $handlerResult = $handler->$method();
 
-        $message = $telegram->getWebhookUpdate()->getMessage()->text;
+        $message = $telegram->getWebhookUpdate()->getMessage();
+
+        $response = null;
+        if ($message->photo) {
+            $response = $message->photo[0]['file_id'];
+        } elseif ($message->text) {
+            $response = $message->text;
+        }
 
         $conversation->history()->save(
             new ConversationHistory([
                 'last_stage' => $method,
-                'response' => $message ?: 'no text',
+                'response' => $response,
                 'next_stage' => $handlerResult
             ])
         );

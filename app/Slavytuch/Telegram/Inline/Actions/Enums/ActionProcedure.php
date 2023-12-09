@@ -9,4 +9,5 @@ enum ActionProcedure: string
     case GIVE_CURRENCY = 'personal:give-currency';
     case SET_MANAGER = 'personal:set-manager';
     case ALL_ORDERS = 'personal:all-orders';
+    case ADD_PRODUCT = 'catalog:add-product';
 }

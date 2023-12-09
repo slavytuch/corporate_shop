@@ -9,4 +9,5 @@ enum Topic: string
     case CANCEL_ORDER = 'cancel-order';
     case GIVE_CURRENCY = 'give-currency';
     case SET_MANAGER = 'set-manager';
+    case ADD_PRODUCT = 'add-product';
 }

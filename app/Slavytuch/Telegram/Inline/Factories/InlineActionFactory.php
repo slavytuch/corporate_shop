@@ -4,6 +4,7 @@ namespace App\Slavytuch\Telegram\Inline\Factories;
 
 use App\Models\User;
 use App\Slavytuch\Telegram\Inline\Abstracts\InlineActionInterface;
+use App\Slavytuch\Telegram\Inline\Actions\Catalog\AddProduct;
 use App\Slavytuch\Telegram\Inline\Actions\Catalog\Buy;
 use App\Slavytuch\Telegram\Inline\Actions\Catalog\DisplayProduct;
 use App\Slavytuch\Telegram\Inline\Actions\Catalog\ListPage;
@@ -36,6 +37,7 @@ class InlineActionFactory
         ActionProcedure::ORDER_LIST->value => OrderList::class,
         ActionProcedure::ALL_ORDERS->value => ManagerOrderList::class,
         ActionProcedure::SET_MANAGER->value => SetManager::class,
+        ActionProcedure::ADD_PRODUCT->value => AddProduct::class
     ];
 
     protected array $actionFunctionRegistry = [

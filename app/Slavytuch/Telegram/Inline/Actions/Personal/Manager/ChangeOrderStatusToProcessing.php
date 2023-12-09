@@ -7,6 +7,7 @@ use App\Slavytuch\Shop\Order\Enums\Status;
 use App\Slavytuch\Shop\Order\Exceptions\OrderServiceException;
 use App\Slavytuch\Shop\Order\OrderService;
 use App\Slavytuch\Telegram\Inline\Abstracts\BaseInlineActionAbstract;
+use App\Slavytuch\Telegram\Keyboards\OrderDisplayKeyboard;
 use Telegram\Bot\Keyboard\Keyboard;
 
 class ChangeOrderStatusToProcessing extends BaseInlineActionAbstract
@@ -31,6 +32,7 @@ class ChangeOrderStatusToProcessing extends BaseInlineActionAbstract
                 'chat_id' => $this->relatedObject->message->chat->id,
                 'message_id' => $this->relatedObject->message->messageId,
                 'text' => $orderService->makeOrderDisplayText($order),
+                'reply_markup' => (new OrderDisplayKeyboard($order))->getKeyboard()
             ]);
 
             $this->answer();

@@ -2,15 +2,17 @@
 
 namespace App\Slavytuch\Telegram\Conversation\Handlers;
 
+use App\Models\PriceType;
+use App\Models\Product;
 use App\Slavytuch\Telegram\Conversation\Abstracts\BaseConversationAbstract;
 use App\Slavytuch\Telegram\Conversation\Abstracts\HasAbandonDialogueInterface;
 use App\Slavytuch\Telegram\Conversation\Traits\HasAbandonDialogue;
+use App\Slavytuch\Telegram\Keyboards\ProductKeyboard;
+use Telegram\Bot\FileUpload\InputFile;
 use Telegram\Bot\Keyboard\Keyboard;
 
-class CreateProductConversation extends BaseConversationAbstract implements HasAbandonDialogueInterface
+class CreateProductConversation extends BaseConversationAbstract
 {
-    use HasAbandonDialogue;
-
     /**
      * Спрашиваем у пользователя как к нему обращаться
      */
@@ -56,7 +58,7 @@ class CreateProductConversation extends BaseConversationAbstract implements HasA
             return null;
         }
 
-        $this->reply(['text' => 'Принято, следующий шаг - картинка']);
+        $this->reply(['text' => 'Принято, следующий шаг - картинка. Если она не нужна - напиши "Нет"']);
 
         return 'picture';
     }
@@ -85,6 +87,14 @@ class CreateProductConversation extends BaseConversationAbstract implements HasA
     {
         $message = $this->telegram->getWebhookUpdate()->getMessage()->text;
 
+        if (mb_strtolower($message) === 'отмена') {
+            $this->reply([
+                'text' => 'Отменил',
+                'reply_markup' => Keyboard::remove(),
+            ]);
+            return null;
+        }
+
         $rows = explode(PHP_EOL, $message);
 
         $prices = [];
@@ -102,75 +112,79 @@ class CreateProductConversation extends BaseConversationAbstract implements HasA
             ])
         ]);
 
-        $this->telegram->sendPhoto([
-            'text' => ''
-        ]);
+        $name = $this->history->where('last_stage', 'name')->first()->response;
+        $description = $this->history->where('last_stage', 'description')->first()->response;
+        $picture = $this->history->where('last_stage', 'picture')->first()->response;
+        $caption = $name . PHP_EOL . PHP_EOL;
+
+        foreach ($prices as $name => $price) {
+            $caption .= $name . ': ' . $price . PHP_EOL;
+        }
+
+        if ($description && $description !== 'Нет') {
+            $caption .= PHP_EOL . $description;
+        }
+
+        if ($picture && $picture !== 'Нет') {
+            $this->telegram->sendPhoto([
+                'chat_id' => $this->telegram->getWebhookUpdate()->getChat()->get('id'),
+                'photo' => $picture,
+                'caption' => $caption,
+            ]);
+        } else {
+            $this->reply([
+                'text' => $caption,
+            ]);
+        }
+
+
+        return 'create';
     }
 
     /**
-     * Уточняем
+     * Создаём
      */
-    public function prompt()
-    {
-        $newName = $this->telegram->getWebhookUpdate()->getMessage()->text;
-
-        $this->reply(
-            [
-                'text' => 'Поменять твоё имя на ' . $newName . '?',
-                'reply_markup' => Keyboard::forceReply([
-                    'keyboard' => [['Да', 'Нет'], ['Не совсем']],
-                    'resize_keyboard' => true,
-                    'one_time_keyboard' => true,
-                ]),
-            ]
-        );
-
-        return 'change';
-    }
-
-    /**
-     * Меняем, или нет
-     */
-    public function change()
+    public function create()
     {
         $confirm = $this->telegram->getWebhookUpdate()->getMessage()->text;
         switch ($confirm) {
             case 'Да':
-                $newName = $this->history->where('next_stage', 'change')->first()?->response;
-                $this->user->name = $newName;
-                $this->user->save();
-                $this->reply(['text' => 'Да здравствует ' . $newName . '!', 'reply_markup' => Keyboard::remove()]);
+                $name = $this->history->where('last_stage', 'name')->first()->response;
+                $description = $this->history->where('last_stage', 'description')->first()->response;
+                $picture = $this->history->where('last_stage', 'picture')->first()->response;
+                $prices = $this->history->where('last_stage', 'prices')->first()->response;
+
+                $newProduct = new Product();
+
+                $newProduct->name = $name;
+                if ($description && $description !== 'Нет') {
+                    $newProduct->description = $description;
+                }
+
+                if ($picture && $picture !== 'Нет') {
+                    $newProduct->picture = $picture;
+                }
+
+                $newProduct->save();
+
+                $rows = explode(PHP_EOL, $prices);
+                foreach ($rows as $row) {
+                    [$priceName, $price] = explode(' - ', $row);
+
+                    $newProduct->prices()->attach(PriceType::where('name', $priceName)->first()->id, [
+                        'price' => $price
+                    ]);
+                }
+
+                $this->reply(['text' => $name . ' создан!', 'reply_markup' => Keyboard::remove()]);
                 break;
             case 'Нет':
-                $this->reply(['text' => 'Хорошо, оставляем ' . $this->user->name, 'reply_markup' => Keyboard::remove()]
+                $this->reply(['text' => 'Хорошо, в следующий раз', 'reply_markup' => Keyboard::remove()]
                 );
                 break;
-            case 'Не совсем':
-                $this->reply(['text' => 'Хорошо, тогда как?', 'reply_markup' => Keyboard::remove()]);
-                return 'init';
             default:
-                $name = $this->history->where('next_stage', 'change')->first()?->response;
-                $this->reply([
-                    'text' => 'Мы всё ещё меняем имя на ' . $name . '?',
-                    'reply_markup' => Keyboard::forceReply([
-                        'keyboard' => [['Да', 'Нет']],
-                        'resize_keyboard' => true,
-                        'one_time_keyboard' => true,
-                    ])
-                ]);
-                return 'prompt';
         }
 
         return null;
-    }
-
-    function getAbandonPrompt(): string
-    {
-        return 'Мы всё ещё меняем твоё имя?';
-    }
-
-    function getAbandonPromptSuccess(): string
-    {
-        return 'Хорошо, оставляем ' . $this->user->name . '. Пожалуста, введи команду ещё раз чтобы продолжить';
     }
 }

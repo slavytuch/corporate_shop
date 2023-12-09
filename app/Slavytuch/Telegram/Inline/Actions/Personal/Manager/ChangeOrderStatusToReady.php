@@ -7,6 +7,7 @@ use App\Slavytuch\Shop\Order\Exceptions\OrderServiceException;
 use App\Slavytuch\Shop\Order\OrderService;
 use App\Slavytuch\Telegram\Inline\Abstracts\BaseInlineActionAbstract;
 use App\Slavytuch\Telegram\Inline\Actions\Enums\ActionProcedure;
+use App\Slavytuch\Telegram\Keyboards\OrderDisplayKeyboard;
 use Telegram\Bot\Keyboard\Keyboard;
 
 class ChangeOrderStatusToReady extends BaseInlineActionAbstract
@@ -31,15 +32,7 @@ class ChangeOrderStatusToReady extends BaseInlineActionAbstract
                 'chat_id' => $this->relatedObject->message->chat->id,
                 'message_id' => $this->relatedObject->message->messageId,
                 'text' => $orderService->makeOrderDisplayText($order),
-                'reply_markup' => Keyboard::make([
-                    'inline_keyboard' => [
-                        [
-                            Keyboard::inlineButton(
-                                ['text' => 'К списку заказов', 'callback_data' => ActionProcedure::ALL_ORDERS->value]
-                            )
-                        ]
-                    ]
-                ])
+                'reply_markup' => (new OrderDisplayKeyboard($order))->getKeyboard()
             ]);
 
 
