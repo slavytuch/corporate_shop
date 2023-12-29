@@ -29,7 +29,7 @@ class DisplayProduct extends BaseInlineActionAbstract
         if ($preparedProduct->picture) {
             $this->telegram->sendPhoto([
                 'chat_id' => $this->relatedObject->message->chat->id,
-                'photo' => str_contains($preparedProduct->picture, public_path()) ? InputFile::create($preparedProduct->picture) : $preparedProduct->picture,
+                'photo' => str_contains($preparedProduct->picture, storage_path()) ? InputFile::create($preparedProduct->picture) : $preparedProduct->picture,
                 'caption' => $preparedProduct->caption,
                 'reply_markup' => (new ProductKeyboard($this->user, $preparedProduct->product))->getKeyboard()
             ]);
